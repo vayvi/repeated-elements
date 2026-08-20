@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bottom-up Modeling of Repeated Elements via Single-Image Analysis-by-Synthesis</title>
+<meta name="description" content="ECCV 2026 — We show that a single image can suffice to learn a meaningful, tunable object prototype for its repeated elements, in a completely bottom-up fashion.">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <span class="venue">ECCV 2026</span>
+    <h1>Bottom-up Modeling of Repeated Elements<br>via Single-Image Analysis-by-Synthesis</h1>
+
+    <p class="authors">
+      <a href="mailto:syrine.kalleli@enpc.fr">Syrine Kalleli</a><sup>1</sup><span class="star">&#9993;</span> &nbsp;&middot;&nbsp;
+      Alexei&nbsp;A.&nbsp;Efros<sup>2</sup> &nbsp;&middot;&nbsp;
+      Mathieu&nbsp;Aubry<sup>1</sup>
+    </p>
+    <p class="affiliations">
+      <sup>1</sup>LIGM, CNRS, Univ Gustave Eiffel, ENPC, Institut Polytechnique de Paris &nbsp;&nbsp;
+      <sup>2</sup>UC Berkeley
+    </p>
+
+    <div class="links">
+      <a class="btn primary" href="assets/paper.pdf"><span class="icon">&#128196;</span> Paper (PDF)</a>
+      <span class="btn disabled"><span class="icon">&#128218;</span> arXiv <span class="soon">Coming soon</span></span>
+      <span class="btn disabled"><span class="icon">&#128187;</span> Code <span class="soon">Coming soon</span></span>
+      <a class="btn" href="#bibtex"><span class="icon">&#10057;</span> BibTeX</a>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <section class="teaser">
+    <div class="wrap">
+      <figure>
+        <img src="assets/teaser.png" alt="Element and image models: from a single input image of apples, a learned prototype is placed at each instance position, given instance-specific appearance and color, then composited with a background to reconstruct the input.">
+        <figcaption><b>Element and image models.</b> From a single input image, we learn a shared image-space prototype and transform it with instance-specific position, appearance, and color to reconstruct every element &mdash; composited with a low-resolution background for the final reconstruction, with no masks, exemplars, or training data beyond the one photo.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section class="abstract">
+    <div class="wrap">
+      <h2>Abstract</h2>
+      <p>
+        We address the problem of discovering repeated elements from a single image. In contrast to existing approaches that depend on large annotated datasets, curated multi-image collections, or object segmentation masks, we show that a single image can suffice to learn a meaningful object model in a completely bottom-up fashion, without any prior knowledge beyond a coarse scale prior. Our method learns a tunable image-space prototype of the repeated elements through a reconstruction objective, enabling the model to identify and synthesize consistent object instances within the same image.
+        Experiments on 116 real images from the FSC-147 dataset demonstrate that our method successfully learns coherent element models and captures intra-category variation on challenging images. Qualitative results reveal superior reconstructions and interpretable decompositions compared to classical decomposition, joint alignment, and 3D object modeling methods, while maintaining a simple 2D formulation. These results suggest that meaningful object discovery can emerge from single-image learning alone.
+      </p>
+    </div>
+  </section>
+
+  <section class="contributions">
+    <div class="wrap">
+      <h2>Contributions</h2>
+      <ul class="contrib">
+        <li><b>Single-image, bottom-up discovery</b> and modeling of repeated elements &mdash; no datasets, masks, or exemplars beyond a coarse scale prior.</li>
+        <li>A shared, <b>tunable image-space prototype</b> learned purely through reconstruction, capturing pose, color, and appearance variation across instances.</li>
+        <li>An <b>interpretable analysis-by-synthesis decomposition</b>: every instance gets an explicit position, rotation/scale, color, and appearance code.</li>
+        <li><b>Outperforms</b> classical decomposition, joint-alignment, and 3D object-modeling baselines &mdash; while staying a simple 2D formulation.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="method">
+    <div class="wrap">
+      <h2>Method</h2>
+      <p>Given one input image, a backbone extracts patch features consumed by two parallel branches: a <b style="color:var(--ink)">background module</b>, and a transformer decoder over per-instance queries.</p>
+
+      <div class="figure-panel">
+        <figure>
+          <img src="assets/architecture.png" alt="Architecture diagram: a backbone feeds a transformer decoder over instance queries; four heads (selection, spatial, color, appearance) drive a shared element generator, and the resulting elements are alpha-composited onto a learned background to reconstruct the image.">
+          <figcaption><b>Architecture.</b> Instance queries are decoded into output tokens, each driving four heads; a shared appearance query drives the element generator. Generated elements are alpha-composited onto the background to reconstruct the image.</figcaption>
+        </figure>
+        <ul class="legend">
+          <li><b>Selection</b> &mdash; existence probability per query</li>
+          <li><b>Spatial</b> &mdash; position, rotation, scale</li>
+          <li><b>Color</b> &mdash; per-instance color transform</li>
+          <li><b>Appearance</b> &mdash; 1-D code driving the element generator</li>
+        </ul>
+      </div>
+
+      <p>The same reconstruction objective, plus light regularization, optimizes the whole model on the single input image.</p>
+    </div>
+  </section>
+
+  <section class="results">
+    <div class="wrap">
+      <h2>Results</h2>
+      <p>We compare to three paradigms for modeling repeated elements &mdash; averaging, joint alignment (SpaceJAM), and 3D object modeling &mdash; all given TMR+SAM detections and masks, i.e. <b style="color:var(--ink)">more supervision than our method uses</b>.</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr class="grp">
+              <th colspan="3"></th>
+              <th colspan="2">Counting</th>
+              <th colspan="3">Image recon.</th>
+              <th colspan="3">Prototype</th>
+            </tr>
+            <tr>
+              <th>Method</th><th>Ex</th><th>Sup</th>
+              <th>MAE&darr;</th><th>RMSE&darr;</th>
+              <th>PSNR&uarr;</th><th>SSIM&uarr;</th><th>LPIPS&darr;</th>
+              <th>PSNR&uarr;</th><th>SSIM&uarr;</th><th>LPIPS&darr;</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th>ABC123</th><td><span class="dot none">&#9679;</span></td><td><span class="dot none">&#9679;</span></td>
+              <td>20.92</td><td>28.58</td><td class="dash">&ndash;</td><td class="dash">&ndash;</td><td class="dash">&ndash;</td><td class="dash">&ndash;</td><td class="dash">&ndash;</td><td class="dash">&ndash;</td>
+            </tr>
+            <tr>
+              <th>GeCo</th><td><span class="dot none">&#9679;</span></td><td><span class="dot full">&#9679;</span></td>
+              <td>7.34</td><td>13.66</td><td class="dash">&ndash;</td><td class="dash">&ndash;</td><td class="dash">&ndash;</td><td class="dash">&ndash;</td><td class="dash">&ndash;</td><td class="dash">&ndash;</td>
+            </tr>
+            <tr>
+              <th>TMR</th><td><span class="dot full">&#9679;</span></td><td><span class="dot full">&#9679;</span></td>
+              <td><b>4.11</b></td><td><b>6.82</b></td><td class="dash">&ndash;</td><td class="dash">&ndash;</td><td class="dash">&ndash;</td><td class="dash">&ndash;</td><td class="dash">&ndash;</td><td class="dash">&ndash;</td>
+            </tr>
+            <tr class="rule">
+              <th>TMR+SAM+Average</th><td><span class="dot half">&#9679;</span></td><td><span class="dot half">&#9679;</span></td>
+              <td class="dash">&ndash;</td><td class="dash">&ndash;</td><td>13.95</td><td>0.423</td><td>0.543</td><td>17.44</td><td>0.658</td><td>0.464</td>
+            </tr>
+            <tr>
+              <th>TMR+SpaceJAM</th><td><span class="dot half">&#9679;</span></td><td><span class="dot half">&#9679;</span></td>
+              <td class="dash">&ndash;</td><td class="dash">&ndash;</td><td>13.63</td><td>0.405</td><td>0.544</td><td>17.77</td><td>0.674</td><td>0.430</td>
+            </tr>
+            <tr>
+              <th>TMR+SAM+3D</th><td><span class="dot half">&#9679;</span></td><td><span class="dot half">&#9679;</span></td>
+              <td class="dash">&ndash;</td><td class="dash">&ndash;</td><td class="dash">&ndash;</td><td class="dash">&ndash;</td><td class="dash">&ndash;</td><td>15.53</td><td>0.568</td><td>0.500</td>
+            </tr>
+            <tr class="rule ours">
+              <th>Ours</th><td><span class="dot none">&#9679;</span></td><td><span class="dot none">&#9679;</span></td>
+              <td>14.11</td><td>26.93</td><td><b>23.76</b></td><td><b>0.737</b></td><td><b>0.242</b></td><td><b>19.40</b></td><td><b>0.700</b></td><td><b>0.353</b></td>
+            </tr>
+          </tbody>
+        </table>
+        <p class="tbl-note"><span class="dot full">&#9679;</span> requires directly &nbsp; <span class="dot half">&#9679;</span> requires indirectly (via TMR) &nbsp; <span class="dot none">&#9679;</span> not required &mdash; columns: <b>Ex</b> exemplar/prompt, <b>Sup</b> supervised training.</p>
+      </div>
+
+      <div class="figure-panel">
+        <figure>
+          <img src="assets/qualitative.jpg" alt="Qualitative comparison across five categories: apples, marker pens, elk, watches, and strawberries. Rows show input/GT, Average, SpaceJAM, a 3D baseline, and Ours, plus per-method prototype crops.">
+          <figcaption><b>Qualitative comparison.</b> Top block (4 rows): Input &rarr; Average &rarr; SpaceJAM &rarr; <b>Ours</b>. Bottom block (5 rows, exemplars): GT &rarr; Average &rarr; SpaceJAM &rarr; 3D model &rarr; <b>Ours</b>. SpaceJAM's mask can degenerate to part of the object (apples) and misses color variation (watches); the 3D baseline is sensitive to segmentation quality.</figcaption>
+        </figure>
+      </div>
+
+      <div class="figure-panel">
+        <figure>
+          <img src="assets/tpc_qualitatives.jpg" alt="Additional qualitative results on natural repeated-element images: flowers, tulips, lily pads, and asters, each with the discovered per-instance crops shown alongside the input.">
+          <figcaption><b>Additional qualitative results.</b> Our method generalizes beyond FSC-147 to diverse natural images of repeated elements from the TPC-268 dataset, discovering and reconstructing consistent instances directly from a single photo.</figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <section class="wrap-up">
+    <div class="wrap">
+      <h2>Conclusion</h2>
+      <p style="font-size:16px; color:var(--ink-soft);">
+        Revisiting a classic vision problem with modern optimization tools, we show that meaningful object models can emerge <b style="color:var(--ink)">directly from pixels</b> &mdash; no dataset, no annotation, just one image and a reconstruction objective. The learned decomposition suggests intra-image repetition itself is a free self-supervision signal for object-centric learning.
+      </p>
+    </div>
+  </section>
+
+  <section class="bibtex" id="bibtex" style="border-bottom:none;">
+    <div class="wrap">
+      <h2>BibTeX</h2>
+      <div class="bibtex">
+        <button class="copy" onclick="navigator.clipboard.writeText(document.getElementById('bibtex-src').innerText); this.innerText='Copied!'; setTimeout(()=>this.innerText='Copy', 1500);">Copy</button>
+        <pre id="bibtex-src">@inproceedings{kalleli2026bottomup,
+  title     = {Bottom-up Modeling of Repeated Elements via Single-Image Analysis-by-Synthesis},
+  author    = {Kalleli, Syrine and Efros, Alexei A. and Aubry, Mathieu},
+  booktitle = {European Conference on Computer Vision (ECCV)},
+  year      = {2026}
+}</pre>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <p class="ack">
+      This work was funded by the EIDA (ANR-22-CE38-0014) and ERC DISCOVER (No. 101076028) projects, and used HPC resources from GENCI-IDRIS (No. AD011015521). It was also supported by the French government via Hi!&nbsp;PARIS under France 2030 (ANR-23-IACL-0005). We thank S&eacute;gol&egrave;ne Albouy, Rapha&euml;l Baena, Sonat Balta&ccedil;i, Paul Kervegan, Marta Lopez, Fei Meng, and Malamatenia Vlachou for figure feedback, fruitful discussions, and interesting datasets.
+    </p>
+    <p class="contact">Correspondence: <a href="mailto:syrine.kalleli@enpc.fr">syrine.kalleli@enpc.fr</a></p>
+  </div>
+</footer>
+
+</body>
+</html>
