@@ -69,7 +69,7 @@ h1{
   line-height: 1.18;
   color: var(--ink);
   margin: 0 auto 26px;
-  max-width: 780px;
+  max-width: var(--max-w);
 }
 
 .authors{
